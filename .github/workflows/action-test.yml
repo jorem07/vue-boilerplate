@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output/public/*  # upload only the files inside public
+          path: .output/*  # upload only the files inside public
 
   deploy:
     needs: build
@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "app_backup/*"  # all files inside app_backup
-          target: /home/mtech-marketing/app_backup/
+          target: /home/mtech-marketing/app_backup
 
       # 🔟 Backup old site and move new build
       - name: Backup old site and move new build
@@ -70,15 +70,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # Ensure backup folder exists
-            rm -rf /home/mtech-marketing/old_app
+            mkdir -p /home/mtech-marketing/old_app
 
+            # Backup old live site if it exists
             if [ -d /home/mtech-marketing/app ]; then
-              cp /home/mtech-marketing/app /home/mtech-marketing/old_app
+              mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app/
             fi
 
-            rm -rf /home/mtech-marketing/app
-
-            cp /home/mtech-marketing/app_backup /home/mtech-marketing/app
-
-            rm -rf /home/mtech-marketing/app
-
+            # Move new build from app_backup to app
+            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app/
