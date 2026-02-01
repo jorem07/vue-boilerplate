@@ -64,9 +64,8 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /home/mtech-marketing
-            rsync -a --delete app/ old_file/
+            cp app old_app
             rm -rf app
-            mkdir -p app
             cp -r app_backup/* app/
             rm -rf app_backup
 
