@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "app_backup/*"
-          target: /home/mtech-marketing/app_backup
+          target: ${{ secrets.PROJECT_PATH }}/app_backup
 
   move_file:
     needs: deploy
