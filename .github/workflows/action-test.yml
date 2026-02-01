@@ -73,19 +73,9 @@ jobs:
 
             mkdir -p app old_app
 
-            shopt -s nullglob
+            mv app old_app
 
-            rm -rf old_app/*
-
-            files=(app/*)
-            if (( ${#files[@]} )); then
-              mv "${files[@]}" old_app/
-            fi
-
-            backup=(app_backup/*)
-            if (( ${#backup[@]} )); then
-              mv "${backup[@]}" app/
-            fi
+            mv app_backup app
 
             rm -rf app_backup
 
