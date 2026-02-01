@@ -75,14 +75,19 @@ jobs:
 
             mkdir -p app
 
-            # Remove everything INSIDE app (but not app itself)
+            # Clean app but keep the directory
             rm -rf app/*
 
-            # Move contents of app_backup into app
+            # Move contents safely
             if [ -d app_backup ]; then
-              mv app_backup/* app/
-              rm -rf app_backup
+              shopt -s dotglob nullglob
+              for item in app_backup/*; do
+                mv "$item" app/
+              done
+              shopt -u dotglob nullglob
+              rmdir app_backup || true
             fi
+
 
 
 
