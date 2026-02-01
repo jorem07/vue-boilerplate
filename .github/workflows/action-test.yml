@@ -73,9 +73,9 @@ jobs:
             
             mkdir -p /home/mtech-marketing/app
 
-            cp /home/mtech-marketing/app /home/mtech-marketing/old_app
+            cp -r /home/mtech-marketing/app /home/mtech-marketing/old_app
 
-            cp /home/mtech-marketing/app_backup /home/mtech-marketing/app
+            cp -r /home/mtech-marketing/app_backup /home/mtech-marketing/app
 
             rm -rf /home/mtech-marketing/app_backup
 
