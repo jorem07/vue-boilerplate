@@ -69,13 +69,13 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Ensure backup folder exists
-            mkdir -p /home/mtech-marketing/old_app
+            rm -rf /home/mtech-marketing/old_app
+            
+            mkdir -p /home/mtech-marketing/app
 
-            # Backup old live site if it exists
-            if [ -d /home/mtech-marketing/app ]; then
-              mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app/
-            fi
+            cp /home/mtech-marketing/app /home/mtech-marketing/old_app
 
-            # Move new build from app_backup to app
-            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app/
+            cp /home/mtech-marketing/app_backup /home/mtech-marketing/app
+
+            rm -rf /home/mtech-marketing/app_backup
+
