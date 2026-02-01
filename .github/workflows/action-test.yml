@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output/*  # upload only the files inside public
+          path: .output/  # upload only the files inside public
 
   deploy:
     needs: build
