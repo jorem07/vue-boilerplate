@@ -81,7 +81,7 @@ jobs:
             rm -rf /home/mtech-marketing/app
 
             # Restore app from backup
-            cp -r /home/mtech-marketing/app_backup /home/mtech-marketing/app
+            cp -r /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
 
             # Remove app_backup folder
             rm -rf /home/mtech-marketing/app_backup
