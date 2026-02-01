@@ -63,6 +63,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
-            
-            rm -rf old_app
+            cd /home/mtech-marketing
+
+            rm -rf app
+
+            cp -r app_backup app
+
+            rm -rf app_backup
+
