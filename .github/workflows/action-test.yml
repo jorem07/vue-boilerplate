@@ -8,81 +8,61 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Generate Nuxt static site
       - name: Generate static site
         run: npm run generate
 
-      # 5️⃣ Check .output folder (optional but recommended)
       - name: Check Nuxt output
         run: ls -R .output
 
-      # 6️⃣ Upload artifact
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output/public/*  # upload only the files inside public
+          path: .output/public  # upload the folder
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      # 7️⃣ Download artifact to temporary folder on runner
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: nuxt-dist
-          path: app_backup  # temp folder on runner
+          path: app_backup
 
-      # 8️⃣ Optional: check downloaded files
       - name: Check files before SCP
         run: ls -R app_backup
 
-      # 9️⃣ Upload new build to VPS temporary folder (app_backup)
       - name: Upload new build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "app_backup/*"  # all files inside app_backup
+          source: "app_backup/*"
           target: /home/mtech-marketing/app_backup
 
-      # 🔟 Backup old site and move new build
-      - name: Backup old site and move new build
-        uses: appleboy/ssh-action@v0.1.7
+  move_file:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move build on VPS
+        uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/mtech-marketing
-
-            mkdir -p app old_app
-
-            mv app old_app
-
-            mv app_backup app
-
-            rm -rf app_backup
-
-
-
-
-
-
-
-
+            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
+            
+            rm -rf old_app
