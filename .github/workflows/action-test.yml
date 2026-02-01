@@ -1,19 +1,62 @@
-name: Check Branch Name
-on: [push]
+name: Nuxt Deploy
+
+on:
+  push:
+    branches: [main]
 
 jobs:
-  branch_name:
-    if: github.ref_name == 'main'
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Branch Name
-        run: |
-          echo 'The name of the branch is' ${{github.ref_name}}
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate static site
+        run: npm run generate
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuxt-dist
+          path: .output/public
 
   deploy:
-    needs: branch_name
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploying to Prod
-        run: echo 'Deploying...'
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-dist
+          path: dist
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Backup current live site
+            rm -rf /var/www/mtech-marketing/old_app
+            mv /var/www/mtech-marketing/app /var/www/mtech-marketing/old_app
+
+            # Create live folder if missing
+            mkdir -p /var/www/mtech-marketing/app
+
+      - name: Upload new build
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "dist/*"
+          target: "/var/www/mtech-marketing/app"
+
