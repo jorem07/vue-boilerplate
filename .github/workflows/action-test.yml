@@ -25,7 +25,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output/public
+          path: .output   # <-- all of .output, like your manual scp
 
   deploy:
     needs: build
@@ -35,9 +35,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nuxt-dist
-          path: dist
+          path: app_backup  # <-- temporary folder on runner
 
-      - name: Backup and prepare VPS
+      - name: Upload new build to VPS (app_backup)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "app_backup/*"  # <-- all files inside .output
+          target: /home/mtech-marketing/app_backup
+
+      - name: Backup old site and move new build
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -45,18 +54,10 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # Backup current live site if it exists
+            mkdir -p /home/mtech-marketing/old_app
             if [ -d /home/mtech-marketing/app ]; then
-              rm -rf /home/mtech-marketing/old_app
-              mv /home/mtech-marketing/app /home/mtech-marketing/old_app
+              mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app/
             fi
-            # Create live folder
-            mkdir -p /home/mtech-marketing/app
 
-      - name: Upload new build
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".output/public/*"
-          target: /home/mtech-marketing/app
+            # Move new build from app_backup to app
+            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app/
