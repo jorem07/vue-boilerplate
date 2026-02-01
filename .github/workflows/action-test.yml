@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output/*  # upload only the files inside public
+          path: .output/public/*  # upload only the files inside public
 
   deploy:
     needs: build
@@ -45,7 +45,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nuxt-dist
-          source: "app_backup/.output/*"  # temp folder on runner
+          path: app_backup  # temp folder on runner
 
       # 8️⃣ Optional: check downloaded files
       - name: Check files before SCP
