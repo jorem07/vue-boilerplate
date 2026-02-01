@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       # 1️⃣ Checkout repo
@@ -25,43 +25,23 @@ jobs:
       - name: Generate static site
         run: npm run generate
 
-      # 5️⃣ Check .output folder (optional)
+      # 5️⃣ Optional: check .output folder
       - name: Check Nuxt output
         run: ls -R .output
 
-      # 6️⃣ Upload entire .output as artifact
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuxt-dist
-          path: .output  # upload the entire Nuxt output folder
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      # 7️⃣ Download artifact to temporary folder on runner
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: nuxt-dist
-          path: app_backup  # temporary folder on runner
-
-      # 8️⃣ Optional: check downloaded files
-      - name: Check files before SCP
-        run: ls -R app_backup
-
-      # 9️⃣ Upload new build to VPS temporary folder
+      # 6️⃣ Upload .output directly to VPS
       - name: Upload new build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "app_backup/*"           # only contents
-          target: /home/mtech-marketing/app_backup/  # trailing slash ensures contents go inside
+          source: ".output/*"           # upload contents of .output
+          target: "/home/mtech-marketing/app_backup/"  # temporary folder on VPS
+          recursive: true               # ensure all subfolders are copied
+          preserve: true                # preserve file permissions and timestamps (-p flag)
 
-      # 🔟 Backup old site and move new build
+      # 7️⃣ Backup old site and move new build
       - name: Backup old site and move new build
         uses: appleboy/ssh-action@v0.1.7
         with:
