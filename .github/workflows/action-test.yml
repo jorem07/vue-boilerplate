@@ -25,16 +25,16 @@ jobs:
       - name: Generate static site
         run: npm run generate
 
-      # 5️⃣ Check .output folder (optional but recommended)
+      # 5️⃣ Check .output folder (optional)
       - name: Check Nuxt output
         run: ls -R .output
 
-      # 6️⃣ Upload artifact
+      # 6️⃣ Upload entire .output as artifact
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-dist
-          path: .output  # upload only the files inside public
+          path: .output  # upload the entire Nuxt output folder
 
   deploy:
     needs: build
@@ -45,21 +45,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nuxt-dist
-          path: app_backup  # temp folder on runner
+          path: app_backup  # temporary folder on runner
 
       # 8️⃣ Optional: check downloaded files
       - name: Check files before SCP
         run: ls -R app_backup
 
-      # 9️⃣ Upload new build to VPS temporary folder (app_backup)
+      # 9️⃣ Upload new build to VPS temporary folder
       - name: Upload new build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "app_backup/*"  # all files inside app_backup
-          target: /home/mtech-marketing/app_backup/
+          source: "app_backup/*"           # only contents
+          target: /home/mtech-marketing/app_backup/  # trailing slash ensures contents go inside
 
       # 🔟 Backup old site and move new build
       - name: Backup old site and move new build
@@ -70,19 +70,15 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # Ensure backup folder exists
-            rm -rf /home/mtech-marketing/old_app
+            mkdir -p /home/mtech-marketing/old_app
 
             # Backup current app if it exists
             if [ -d /home/mtech-marketing/app ]; then
-              cp -r /home/mtech-marketing/app /home/mtech-marketing/old_app
+              mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app/
             fi
 
-            # Remove current app
-            rm -rf /home/mtech-marketing/app
+            # Move new build contents into live folder
+            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app/
 
-            # Restore app from backup
-            cp -r /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
-
-            # Remove app_backup folder
+            # Remove temporary backup folder
             rm -rf /home/mtech-marketing/app_backup
-
