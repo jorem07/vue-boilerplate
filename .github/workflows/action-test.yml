@@ -68,7 +68,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          run: cd /home/mtech-marketing && shopt -s nullglob && rm -rf old_app/* && mv app/* old_app/ && mv app_backup/* app/ && rm -rf app_backup
+          script: cd /home/mtech-marketing && shopt -s nullglob && rm -rf old_app/* && mv app/* old_app/ && mv app_backup/* app/ && rm -rf app_backup
 
 
 
