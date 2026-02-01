@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app color="indigoDark">
-    <v-toolbar-title>My App</v-toolbar-title>
+    <v-toolbar-title>MTech</v-toolbar-title>
     <v-btn @click="goTo('/')">Home</v-btn>
     <v-btn @click="goTo('/about')">About</v-btn>
     <v-btn @click="goTo('/contact')">Contact</v-btn>
