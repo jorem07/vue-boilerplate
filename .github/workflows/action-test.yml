@@ -67,7 +67,7 @@ jobs:
 
             rm -rf app
 
-            cp -r app_backup app
+            cp -r app_backup/* app
 
             rm -rf app_backup
 
