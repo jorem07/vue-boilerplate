@@ -65,7 +65,7 @@ jobs:
           script: |
             cd /home/mtech-marketing
             rm -rf old_app
-            cp app old_app
+            cp -r app old_app
             rm -rf app
             cp -r app_backup/* app/
             rm -rf app_backup
