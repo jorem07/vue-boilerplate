@@ -69,18 +69,17 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
 
-            mkdir -p /home/mtech-marketing/app
+            cd /home/mtech-marketing
 
-            mkdir -p /home/mtech-marketing/old_app
+            mkdir -p app old_app
 
-            rm -rf /home/mtech-marketing/old_app/*
+            mv app/* old_app 2>/dev/null || true
 
-            mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app
+            if [ -d app_backup ]; then
+              mv app_backup/* app
+              rm -rf app_backup
+            fi
 
-            rm -rf /home/mtech-marketing/app/*
-
-            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
-
-            rm -rf /home/mtech-marketing/app_backup
 
