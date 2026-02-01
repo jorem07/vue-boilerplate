@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       # 1️⃣ Checkout repo
@@ -25,23 +25,43 @@ jobs:
       - name: Generate static site
         run: npm run generate
 
-      # 5️⃣ Optional: check .output folder
+      # 5️⃣ Check .output folder (optional but recommended)
       - name: Check Nuxt output
         run: ls -R .output
 
-      # 6️⃣ Upload .output directly to VPS
+      # 6️⃣ Upload artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuxt-dist
+          path: .output/public/*  # upload only the files inside public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # 7️⃣ Download artifact to temporary folder on runner
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-dist
+          path: app_backup  # temp folder on runner
+
+      # 8️⃣ Optional: check downloaded files
+      - name: Check files before SCP
+        run: ls -R app_backup
+
+      # 9️⃣ Upload new build to VPS temporary folder (app_backup)
       - name: Upload new build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".output/*"           # upload contents of .output
-          target: "/home/mtech-marketing/app_backup/"  # temporary folder on VPS
-          recursive: true               # ensure all subfolders are copied
-          preserve: true                # preserve file permissions and timestamps (-p flag)
+          source: "app_backup/*"  # all files inside app_backup
+          target: /home/mtech-marketing/app_backup/
 
-      # 7️⃣ Backup old site and move new build
+      # 🔟 Backup old site and move new build
       - name: Backup old site and move new build
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -52,16 +72,13 @@ jobs:
             # Ensure backup folder exists
             rm -rf /home/mtech-marketing/old_app
 
-            # Backup current app if it exists
             if [ -d /home/mtech-marketing/app ]; then
-              cp -r /home/mtech-marketing/app /home/mtech-marketing/old_app
+              cp /home/mtech-marketing/app /home/mtech-marketing/old_app
             fi
 
-            # Remove current app
             rm -rf /home/mtech-marketing/app
 
-            # Restore app from backup
-            cp -r /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
+            cp /home/mtech-marketing/app_backup /home/mtech-marketing/app
 
-            # Remove app_backup folder
-            rm -rf /home/mtech-marketing/app_backup
+            rm -rf /home/mtech-marketing/app
+
