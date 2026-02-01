@@ -63,7 +63,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/mtech-marketing
+            cd ${{ secrets.PROJECT_PATH }}
             rm -rf old_app
             cp -r app old_app
             rm -rf app
