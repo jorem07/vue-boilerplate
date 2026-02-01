@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "app_backup/*"  # all files inside app_backup
-          target: /home/mtech-marketing/app_backup
+          target: /home/mtech-marketing/app_backup/
 
       # 🔟 Backup old site and move new build
       - name: Backup old site and move new build
