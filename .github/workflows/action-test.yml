@@ -70,23 +70,24 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
-
+            
             cd /home/mtech-marketing
 
-            mkdir -p app
+            mkdir -p app old_app
 
-            # Clean app but keep the directory
-            rm -rf app/*
+            # Archive current app contents (NOT app_backup)
+            rm -rf old_app/*
+            shopt -s dotglob
+            mv app/* old_app/ 2>/dev/null || true
+            shopt -u dotglob
 
-            # Move contents safely
-            if [ -d app_backup ]; then
-              shopt -s dotglob nullglob
-              for item in app_backup/*; do
-                mv "$item" app/
-              done
-              shopt -u dotglob nullglob
-              rmdir app_backup || true
+            # Restore from backup (contents only)
+            if [ -d old_app/app_backup ]; then
+              rm -rf app/*
+              mv old_app/app_backup/* app/
+              rm -rf old_app/app_backup
             fi
+
 
 
 
