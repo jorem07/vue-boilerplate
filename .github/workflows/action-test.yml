@@ -50,15 +50,18 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # Ensure backup folder exists
-            mkdir -p /home/mtech-marketing/old_app
+            rm -rf /home/mtech-marketing/old_app
 
             # Backup current app if it exists
             if [ -d /home/mtech-marketing/app ]; then
-              mv /home/mtech-marketing/app/* /home/mtech-marketing/old_app/
+              cp -r /home/mtech-marketing/app /home/mtech-marketing/old_app
             fi
 
-            # Move new build contents into live folder
-            mv /home/mtech-marketing/app_backup/* /home/mtech-marketing/app/
+            # Remove current app
+            rm -rf /home/mtech-marketing/app
 
-            # Remove temporary backup folder
+            # Restore app from backup
+            cp -r /home/mtech-marketing/app_backup/* /home/mtech-marketing/app
+
+            # Remove app_backup folder
             rm -rf /home/mtech-marketing/app_backup
