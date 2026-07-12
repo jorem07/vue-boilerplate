@@ -2,7 +2,7 @@
 export default  {
   app: {
     head: {
-      title: 'Nuxt App', // default fallback title
+      title: 'MTech — Build. Ship. Repeat.',
       htmlAttrs: {
         lang: 'en'
       },

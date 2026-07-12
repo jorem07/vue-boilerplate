@@ -1,28 +1,40 @@
 <script setup>
-import { API_USERS_INDEX } from '../api'
+import { getMockUserList } from '~/data/mockUsers'
+import { API_USERS_INDEX } from '~/api'
 import { onMounted, ref } from 'vue'
 
 definePageMeta({ layout: 'empty' })
 
-const data = ref([])      // safe for v-for
-const details = ref({})   // safe for template
+const data = ref([])
+const details = ref({})
+const currentUser = ref(null)
 
 onMounted(async () => {
+  const token = localStorage.getItem('api_token')
+  const storedUser = localStorage.getItem('user')
+
+  if (storedUser) {
+    currentUser.value = JSON.parse(storedUser)
+  }
+
+  // Temporary: use mock users when logged in with a mock token
+  if (token?.startsWith('mock-token-')) {
+    data.value = getMockUserList()
+    details.value = { current_page: 1, total: data.value.length }
+    return
+  }
+
   try {
-    const token = localStorage.getItem('api_token')
     const response = await $fetch(API_USERS_INDEX, {
       method: 'POST',
-      body: {  show: 0  },
+      body: { show: 0 },
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
 
     data.value = response.body
     details.value = response.details
-
-    console.log('Data:', data.value)
-    console.log('Details:', details.value)
   } catch (err) {
     console.log('Error', err)
   }
@@ -30,11 +42,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="pa-6">
+    <v-alert v-if="currentUser" type="success" variant="tonal" class="mb-4">
+      Signed in as {{ currentUser.first_name }} {{ currentUser.last_name }} ({{ currentUser.role }})
+    </v-alert>
+
     <h2>Users</h2>
     <ul>
       <li v-for="user in data" :key="user.id">
-        {{ user.first_name }} {{ user.last_name }} ({{ user.email }})
+        {{ user.first_name }} {{ user.last_name }} ({{ user.email }}) — {{ user.role }}
       </li>
     </ul>
 
