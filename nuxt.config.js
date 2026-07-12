@@ -1,5 +1,16 @@
 // nuxt.config.js
 export default  {
+  app: {
+    head: {
+      title: 'MTech — Build. Ship. Repeat.',
+      htmlAttrs: {
+        lang: 'en'
+      },
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ],
+    },
+  },
   devServer: {
     host: '0.0.0.0',
     port: 3000
